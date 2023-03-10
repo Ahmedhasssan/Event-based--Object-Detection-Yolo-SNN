@@ -15,14 +15,12 @@ Dataset:
 Training:
       
       -Bash run_gen1.sh
-      
             -Provide checkpoints path to save the model
             -Provide the path to save training performance 
 
 Inference:
 
       -Bash run_gen1_inference.sh
-            
             -Provide saved model path
             -Provide the path to save inference images
             
