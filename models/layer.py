@@ -280,12 +280,6 @@ class atan(torch.autograd.Function):
         grad_input = None
         grad_alpha = None
         grad_input = grad_output.clone()
-        if ctx.needs_input_grad[0]:
-            grad_input = ctx.alpha / 2 / (1 + (math.pi / 2 * ctx.alpha * ctx.saved_tensors[0]).pow_(2)) * grad_output
-        (input, out, others, thresh) = ctx.saved_tensors
-        gama = others[0].item()
-        tmp = (1 / gama) * (1 / gama) * ((gama - input.abs()).clamp(min=0))
-        grad_input = grad_input * tmp
         return grad_input, None, None, None
 
 ######### Surrogate Gradient Sigmoid ############
@@ -306,8 +300,6 @@ class sigmoid(torch.autograd.Function):
         (input, out, others, thresh) = ctx.saved_tensors
         gama = others[0].item()
         grad_input = grad_output.clone()
-        tmp = (1 / gama) * (1 / gama) * ((gama - input.abs()).clamp(min=0))
-        grad_input = grad_input * tmp
         return grad_input, None, None, None
 
 class ZIFArchTan(nn.Module):
