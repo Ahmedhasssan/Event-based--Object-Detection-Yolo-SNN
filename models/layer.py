@@ -156,21 +156,6 @@ class Dropout(nn.Module):
     def reset(self):
         self.mask = None
 
-
-class Layer_LP(nn.Module):
-    def __init__(self, in_plane, out_plane, kernel_size, stride, padding, wbit):
-        super(Layer_LP, self).__init__()
-        self.fwd = SeqToANNContainer(
-            QConv2d(in_plane, out_plane, kernel_size, stride=stride, padding=padding, bias=True, wbit=wbit, abit=32, infer=False),
-            nn.BatchNorm2d(out_plane)
-        )
-        #self.act = LIFSpike()
-        self.act=ZIFArchTan()
-    def forward(self,x):
-        x = self.fwd(x)
-        x = self.act(x)
-        return x
-
 class Dropout2d(Dropout):
     def __init__(self, p=0.2):
         super().__init__(p)
