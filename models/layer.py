@@ -315,7 +315,6 @@ class sigmoid(torch.autograd.Function):
         tmp = (1 / gama) * (1 / gama) * ((gama - input.abs()).clamp(min=0))
         grad_input = grad_input * tmp
 
-        sig = torch.sigmoid(input)
         fire = input.ge(0).float()
         grad_thre = grad_input.mul(sig)
         grad_thre = torch.sum(grad_thre.mul(fire)).view(-1).mul(-1)
