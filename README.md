@@ -1,4 +1,4 @@
-# Object-detection-with-SNN-YoloV2
+# Object-detection-with-QuantSNN-YoloV2
 This repo presents the LT_SNN based custom YoloV2 architecture to perform object detection on DVS object detection datasets.
 
 ## Dependencies:
