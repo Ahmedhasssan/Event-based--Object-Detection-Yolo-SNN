@@ -312,12 +312,6 @@ class ZIFArchTan(nn.Module):
             vth = self.thresh
             spike = self.act(mem - vth, self.gama, self.salpha, self.thresh)
             mem = (1 - spike) * mem
-            #### Low Precision of Membrane Potential #####
-            #mem = log2(mem, self.act_alpha)
-            ###### Save Membrane Potential ######
-            print(self.neuron_idx)
-            pot = mem.detach().cpu()
-            torch.save(pot, f"./vmem/neuron{self.neuron_idx}_t{t}.pt")
             spike_pot.append(spike)
         return torch.stack(spike_pot, dim=1)
 
