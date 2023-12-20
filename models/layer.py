@@ -286,13 +286,7 @@ class atan(torch.autograd.Function):
         gama = others[0].item()
         tmp = (1 / gama) * (1 / gama) * ((gama - input.abs()).clamp(min=0))
         grad_input = grad_input * tmp
-        # s = ctx.saved_tensors[1]
-        # grad_alpha = torch.sum(grad_output.mul(s)).view(-1)
-
-        mask_alpha = input.ge(0).float()
-        mask = grad_input*mask_alpha
-        grad_vth = torch.sum(grad_output.mul(mask)).view(-1).mul(-1)
-        return grad_input, None, None, grad_vth
+        return grad_input, None, None, None
 
 ######### Surrogate Gradient Sigmoid ############
 def heaviside(x:Tensor):
@@ -314,11 +308,7 @@ class sigmoid(torch.autograd.Function):
         grad_input = grad_output.clone()
         tmp = (1 / gama) * (1 / gama) * ((gama - input.abs()).clamp(min=0))
         grad_input = grad_input * tmp
-
-        fire = input.ge(0).float()
-        grad_thre = grad_input.mul(sig)
-        grad_thre = torch.sum(grad_thre.mul(fire)).view(-1).mul(-1)
-        return grad_input, None, None, grad_thre
+        return grad_input, None, None, None
 
 class ZIFArchTan(nn.Module):
     r"""
@@ -355,27 +345,6 @@ class ZIFArchTan(nn.Module):
         return torch.stack(spike_pot, dim=1)
 
 ############################################
-
-class ZIF(torch.autograd.Function):
-    @staticmethod
-    def forward(ctx, input, gama, salpha, thresh):
-        out = (input >= 0).float()
-        L = torch.tensor([gama])
-        ctx.alpha = thresh
-        ctx.save_for_backward(input, out, L)
-        return out
-
-    @staticmethod
-    def backward(ctx, grad_output):
-        (input, out, others) = ctx.saved_tensors
-        gama = others[0].item()
-        grad_input = grad_output.clone()
-        if ctx.needs_input_grad[0]:
-            sgax = (ctx.saved_tensors[0] * ctx.alpha).sigmoid_()
-            grad_input = grad_output * (1. - sgax) * sgax * ctx.alpha
-        tmp = (1 / gama) * (1 / gama) * ((gama - input.abs()).clamp(min=0))
-        grad_input = grad_input * tmp
-        return grad_input, None, None, None
 
 class LVZIF(torch.autograd.Function):
     @staticmethod
@@ -420,25 +389,6 @@ class SLSZIF(torch.autograd.Function):
         s = ctx.saved_tensors[1]
         grad_alpha = torch.sum(grad_output.mul(s)).view(-1)
         return grad_input, None, grad_alpha, None
-
-class LIFSpike(nn.Module):
-    def __init__(self, thresh=1.0, tau=0.5, gama=1.0):
-        super(LIFSpike, self).__init__()
-        self.act = ZIF.apply
-        self.thresh = thresh
-        self.tau = tau
-        self.gama = gama
-
-    def forward(self, x):
-        mem = 0
-        spike_pot = []
-        T = x.shape[1]
-        for t in range(T):
-            mem = mem * self.tau + x[:, t, ...]
-            spike = self.act(mem - self.thresh, self.gama, 1.0, 1.0)
-            mem = (1 - spike) * mem
-            spike_pot.append(spike)
-        return torch.stack(spike_pot, dim=1)
 
 
 def add_dimention(x, T):
